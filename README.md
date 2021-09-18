@@ -1,6 +1,10 @@
 # OVERVIEW
 ![Architecture](Architecture.jpeg)
 
+# SOURCE
++ Mongodb:
+    + https://viblo.asia/p/cai-dat-mongo-cluster-voi-docker-m68Z0NN25kG
+    + https://viblo.asia/p/nhung-dieu-can-biet-ve-mongodb-cluster-oOVlYEmVl8W
 #RUN
 
 1. ```cd Elastisearch```
