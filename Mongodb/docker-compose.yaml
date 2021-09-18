@@ -1,0 +1,139 @@
+version: '2'
+services:
+  shard00:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0  --replSet rs0 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard00:/data/db
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/replicaset_0:/scripts/replicaset_0
+    ports:
+      - 27022:27017
+    links:
+      - shard01
+      - shard02
+  shard01:
+    image: mongo
+    command: mongod --replSet rs0 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard01:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27023:27017
+  shard02:
+    image: mongo
+    command: mongod --replSet rs0 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard02:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27024:27017
+  shard03:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0  --replSet rs1 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard03:/data/db
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/replicaset_1:/scripts/replicaset_1
+    ports:
+      - 27025:27017
+    links:
+      - shard04
+      - shard05
+  shard04:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --replSet rs1 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard04:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27026:27017
+  shard05:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --replSet rs1 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard05:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27027:27017
+  shard06:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard06:/data/db
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/replicaset_2:/scripts/replicaset_2
+    ports:
+      - 27028:27017
+    links:
+      - shard07
+      - shard08
+  shard07:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard07:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27029:27017
+  shard08:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
+    volumes:
+      - ./data/shard08:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27030:27017
+  configsvr0:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --configsvr --replSet configRs --dbpath /data/db --port 27017
+    volumes:
+      - ./data/configsvr0:/data/db
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/config_replicaset:/scripts/config_replicaset
+    ports:
+      - 27019:27017
+    links:
+      - shard00
+      - shard03
+      - shard06
+  configsvr1:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --configsvr --replSet configRs --dbpath /data/db --port 27017
+    volumes:
+      - ./data/configsvr1:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27020:27017
+    links:
+      - configsvr0
+  configsvr2:
+    image: mongo
+    command: mongod --bind_ip 0.0.0.0 --configsvr --replSet configRs --dbpath /data/db --port 27017
+    volumes:
+      - ./data/configsvr2:/data/db
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 27021:27017
+    links:
+      - configsvr1
+  router0:
+    image: mongo
+    command: mongos --bind_ip 0.0.0.0 --configdb configRs/configsvr0:27017,configsvr1:27017
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/sharding_replicaset:/scripts/sharding_replicaset
+    ports:
+      - 27017:27017
+    links:
+      - configsvr2
+  router1:
+    image: mongo
+    command: mongos --bind_ip 0.0.0.0 --configdb configRs/configsvr0:27017,configsvr1:27017,configsvr2:27017 --port 27017
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./scripts/sharding_replicaset:/scripts/sharding_replicaset
+    ports:
+      - 27018:27017
+    links:
+      - router0
