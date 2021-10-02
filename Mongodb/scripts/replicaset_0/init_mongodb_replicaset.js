@@ -1,5 +1,8 @@
 var cfg = {
     "_id": "rs0",
+    settings: {
+        "heartbeatIntervalMillis": 20000
+    },
     "members": [
         {
             "_id": 0,

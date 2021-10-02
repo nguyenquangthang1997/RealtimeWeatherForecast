@@ -1,5 +1,8 @@
 var cfg = {
     "_id": "configRs",
+    settings: {
+        "heartbeatIntervalMillis": 20000
+    },
     "members": [
         {
             "_id": 0,
@@ -18,4 +21,10 @@ var cfg = {
 
 var status = rs.initiate(cfg);
 
+printjson(status);
+printjson(status);
+printjson(status);
+printjson(status);
+printjson(status);
+printjson(status);
 printjson(status);
