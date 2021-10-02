@@ -353,16 +353,16 @@ def one_time_call():
     return ori_df, df, multi_window, multi_lstm_model
 
 
-def make_prediction(current_47_days_before=[{'Date Time': '04.11.2015 12:00:00'}], ori_df=None, df=None, multi_window=None, multi_lstm_model=None):
+def make_prediction(current_47_hours_before=[{'Date Time': '04.11.2015 12:00:00'}], ori_df=None, df=None, multi_window=None, multi_lstm_model=None):
     """
     current_47_days_before: list of dict
     """
-    if current_47_days_before is not None: 
-        start_date = current_47_days_before[0]['Date Time']
+    if current_47_hours_before is not None: 
+        start_date = current_47_hours_before[0]['Date Time']
         idx = ori_df.index[ori_df['Date Time'] == start_date][0]
         real_index = (ori_df.index == idx).nonzero()[0][0]
 
-    if current_47_days_before is not None:
+    if current_47_hours_before is not None:
         to_test_df = df.iloc[real_index: real_index + 48]
     else:
         to_test_df = df.iloc[-49:]
