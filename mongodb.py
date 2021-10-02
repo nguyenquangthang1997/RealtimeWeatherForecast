@@ -8,3 +8,16 @@ weather_data_all_collection = weather_data["WeatherDataAll"]
 
 def insert_weather_data(datas):
     weather_data_all_collection.insert_many(datas)
+
+
+def query(_query):
+    result = []
+    responses = weather_data_all_collection.find(_query)
+    for doc in responses:
+        result.append(doc)
+    return result
+
+
+# example
+# https://www.w3schools.com/python/python_mongodb_query.asp
+print(query({"VPact(mbar)": "5.53"}))
