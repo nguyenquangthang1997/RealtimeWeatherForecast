@@ -10,7 +10,7 @@ import pandas as pd
 import seaborn as sns
 import tensorflow as tf
 from Visual_data import visualize_date_in_cyclic_form, visualize_TPR, visualize_wind_data
-
+from copy import deepcopy
 
 class WindowGenerator():
     def __init__(self, input_width, label_width, shift,
@@ -20,6 +20,7 @@ class WindowGenerator():
         self.train_df = train_df
         self.val_df = val_df
         self.test_df = test_df
+        # import pdb; pdb.set_trace()
 
         # Work out the label column indices.
         self.label_columns = label_columns
@@ -316,18 +317,20 @@ def compile_and_fit(model, window, patience=2):
 #     return multi_lstm_model
     
 
-def make_prediction(current_47_days_before=None, future_true_values=None):
-    """
-    current_47_days_before: Pandas dataframe
-    future_true_values: Pandas dataframe
-    """
 
-    mpl.rcParams['figure.figsize'] = (8, 6)
-    mpl.rcParams['axes.grid'] = False
+def create_df_from_list_of_dict(input):
+    df = pd.DataFrame(input)
+    return df 
+    # keys = input.keys()
 
+
+def one_time_call():
     csv_path = 'jena_climate_2009_2016.csv'
     df = pd.read_csv(csv_path)
-    df = df[5::6]
+    df = df[5::6] # subsampling hours
+
+    ori_df = deepcopy(df)
+
     date_time = pd.to_datetime(df.pop('Date Time'), format='%d.%m.%Y %H:%M:%S')
 
     print("Preprocess wind velocity")
@@ -335,6 +338,7 @@ def make_prediction(current_47_days_before=None, future_true_values=None):
 
     print("Preprocess time: To cosine")
     df = preprocess_time(date_time, df)
+
 
     train_df, val_df, test_df, num_features = split_data(df)
 
@@ -346,14 +350,38 @@ def make_prediction(current_47_days_before=None, future_true_values=None):
 
     multi_lstm_model = tf.keras.models.load_model('saved_model/lstm')
 
-    if current_47_days_before is None:
-        to_test_df = df[-100:]
+    return ori_df, df, multi_window, multi_lstm_model
+
+
+def make_prediction(current_47_days_before=[{'Date Time': '04.11.2015 12:00:00'}], ori_df=None, df=None, multi_window=None, multi_lstm_model=None):
+    """
+    current_47_days_before: list of dict
+    """
+    if current_47_days_before is not None: 
+        start_date = current_47_days_before[0]['Date Time']
+        idx = ori_df.index[ori_df['Date Time'] == start_date][0]
+        real_index = (ori_df.index == idx).nonzero()[0][0]
+
+    if current_47_days_before is not None:
+        to_test_df = df.iloc[real_index: real_index + 48]
     else:
-        to_test_df = pd.concat((current_47_days_before, future_true_values))
-    
+        to_test_df = df.iloc[-49:]
+
     multi_window.test_df = to_test_df
 
-    return multi_lstm_model.predict(multi_window.test)
+    output =  multi_lstm_model.predict(multi_window.test)[0]
+    keys = df.keys().tolist()
+    list_out = list()
+    for j in range(24):
+        dict_out = dict()
+        for i in range(len(keys)):
+            this_key = keys[i]
+            dict_out[this_key] = output[j][i]
+            if i == len(keys) - 5:
+                break
+        list_out.append(dict_out)
+
+    return list_out
 
 
 # def preprocess_new_df(new_df, old_df):
@@ -367,9 +395,16 @@ def make_prediction(current_47_days_before=None, future_true_values=None):
 
 if __name__ == "__main__":
 
-    out = make_prediction()
-    print(out)
-    print(out.shape)
+    # csv_path = 'jena_climate_2009_2016.csv'
+    # df = pd.read_csv(csv_path)
+    # df = df[5::6] # subsampling hours
+    # df.to_csv('preprocessed_data.csv', index=False)
+
+    ori_df, df, multi_window, multi_lstm_model = one_time_call()
+
+    for i in range(1):
+        out = make_prediction(ori_df=ori_df, df=df, multi_window=multi_window, multi_lstm_model=multi_lstm_model)
+        print(out)
 
 
     # mpl.rcParams['figure.figsize'] = (8, 6)
