@@ -1,5 +1,5 @@
 # OVERVIEW
-![Architecture](Overview.jpeg)
+![Architecture](overview.jpeg)
 
 # SOURCE
 + Mongodb:
