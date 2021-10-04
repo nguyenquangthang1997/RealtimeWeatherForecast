@@ -15,9 +15,25 @@ def insert_predicted_weather_data(datas):
     predicted_weather_data_all_collection.insert_many(datas)
 
 
-def query(_query):
+def queryAll(_query):
     result = []
-    responses = weather_data_all_collection.find(_query)
+    responses = weather_data_all_collection.find(_query, projection={'_id': False})
+    for doc in responses:
+        result.append(doc)
+    return result
+
+
+def queryAll(_query):
+    result = []
+    responses = weather_data_all_collection.find(_query, projection={'_id': False})
+    for doc in responses:
+        result.append(doc)
+    return result
+
+
+def queryPredict(_query):
+    result = []
+    responses = predicted_weather_data_all_collection.find(_query, projection={'_id': False})
     for doc in responses:
         result.append(doc)
     return result
