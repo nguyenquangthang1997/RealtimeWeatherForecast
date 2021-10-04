@@ -10,14 +10,11 @@ pip install -e .
 ```
 
 ## Usage
-```python
-from visualization.visualize import history
-csv_path = '/home/thulx/Master/BI/jena_climate_2009_2016.csv'
-xlabel = 'Date time'
-ylabel = ''
-title = ''
-save_path = 'his2.png'
-plot_cols = ['T (degC)', 'p (mbar)']
-history(csv_path, save_path, xlabel, ylabel, title, plot_cols)
-```
-See _visualize.py_ for detail.
+
+See _test.py_ for examples:
+- test_history: draw full data.
+- test_drawpredict: draw predict and ground truth.
+- test_err: draw error percentage  of prediction.
+- test_meanNstd_yy: draw mean and std (unit "year").
+- test_wind: draw processed wind.
+
