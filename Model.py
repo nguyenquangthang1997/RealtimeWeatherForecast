@@ -208,13 +208,14 @@ def preprocess_time(date_time, df):
     return df 
 
 
-def split_data(df):
+def split_data(df, df_ori):
     column_indices = {name: i for i, name in enumerate(df.columns)}
 
     n = len(df)
     train_df = df[0:int(n*0.7)]
     val_df = df[int(n*0.7):int(n*0.9)]
     test_df = df[int(n*0.9):]
+    test_df_ori = df_ori[int(n*0.9) + 47:]
 
     num_features = df.shape[1]
 
@@ -226,7 +227,7 @@ def split_data(df):
     val_df = (val_df - train_mean) / train_std
     test_df = (test_df - train_mean) / train_std
 
-    return train_df, val_df, test_df, num_features
+    return train_df, val_df, test_df, num_features, train_mean, train_std, test_df_ori
 
 
 
@@ -340,7 +341,7 @@ def one_time_call():
     df = preprocess_time(date_time, df)
 
 
-    train_df, val_df, test_df, num_features = split_data(df)
+    train_df, val_df, test_df, num_features, train_mean, train_std, test_df_ori = split_data(df, ori_df)
 
     OUT_STEPS = 24
     # num_features = df.shape[1] # check current functions
@@ -350,10 +351,10 @@ def one_time_call():
 
     multi_lstm_model = tf.keras.models.load_model('saved_model/lstm')
 
-    return ori_df, df, multi_window, multi_lstm_model
+    return ori_df, df, multi_window, multi_lstm_model, train_mean, train_std, test_df_ori
 
 
-def make_prediction(current_47_hours_before=[{'Date Time': '04.11.2015 12:00:00'}], ori_df=None, df=None, multi_window=None, multi_lstm_model=None):
+def make_prediction(current_47_hours_before=[{'Date Time': '04.11.2015 12:00:00'}], ori_df=None, df=None, multi_window=None, multi_lstm_model=None, train_mean=None, train_std=None, test_df_ori=None):
     """
     current_47_days_before: list of dict
     """
@@ -367,19 +368,38 @@ def make_prediction(current_47_hours_before=[{'Date Time': '04.11.2015 12:00:00'
     else:
         to_test_df = df.iloc[-49:]
 
-    multi_window.test_df = to_test_df
+    # multi_window.test_df = to_test_df
 
-    output =  multi_lstm_model.predict(multi_window.test)[0]
+    output =  multi_lstm_model.predict(multi_window.test)
+    output = output * train_std.to_numpy() + train_mean.to_numpy()
+    # import pdb; pdb.set_trace()
     keys = df.keys().tolist()
     list_out = list()
-    for j in range(24):
-        dict_out = dict()
-        for i in range(len(keys)):
-            this_key = keys[i]
-            dict_out[this_key] = output[j][i]
-            if i == len(keys) - 5:
-                break
+
+    for i in range(len(output)):
+        dict_out = dict() 
+        dict_out['Date Time'] = test_df_ori.iloc[i]['Date Time']
+
+        for j in range(len(keys)):
+            this_key = keys[j]
+            dict_out[this_key] = output[i][0][j]
+            if j == len(keys) - 5:
+                break 
         list_out.append(dict_out)
+
+    # import pdb; pdb.set_trace()
+    
+    out = pd.DataFrame(list_out)
+    out.to_csv('predict.csv', index=False)    
+
+    # for j in range(24):
+    #     dict_out = dict()
+    #     for i in range(len(keys)):
+    #         this_key = keys[i]
+    #         dict_out[this_key] = output[j][i]
+    #         if i == len(keys) - 5:
+    #             break
+    #     list_out.append(dict_out)
 
     return list_out
 
@@ -400,11 +420,13 @@ if __name__ == "__main__":
     # df = df[5::6] # subsampling hours
     # df.to_csv('preprocessed_data.csv', index=False)
 
-    ori_df, df, multi_window, multi_lstm_model = one_time_call()
+    ori_df, df, multi_window, multi_lstm_model, train_mean, train_std, test_df_ori = one_time_call()
+
+    # import pdb; pdb.set_trace()
 
     for i in range(1):
-        out = make_prediction(ori_df=ori_df, df=df, multi_window=multi_window, multi_lstm_model=multi_lstm_model)
-        print(out)
+        out = make_prediction(ori_df=ori_df, df=df, multi_window=multi_window, multi_lstm_model=multi_lstm_model, train_mean=train_mean, train_std=train_std, test_df_ori=test_df_ori)
+        # print(out)
 
 
     # mpl.rcParams['figure.figsize'] = (8, 6)
