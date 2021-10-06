@@ -7,6 +7,7 @@ import datetime
 import numpy as np
 from typing import List, Union
 import random
+import math
 
 # RGBs = [(random.random(), random.random(), random.random()) for _ in range(20)]
 def get_cmap(n, name='hsv'):
@@ -44,7 +45,7 @@ def history(csv_path: Union[str, List[dict]], save_path: str,
         plot_features = df[col]
         plot_features.index = date_time
         _ = plot_features.plot(subplots=True, color=cmap(i))
-        _finish(os.path.join(save_path, col[: col.find('(')] + '.png'), xlabel, ylabel, col)
+        _finish(os.path.join(save_path, col[: col.find('(')] + '.pdf'), xlabel, ylabel, col)
 
 def draw_predict(csv_path: Union[str, List[dict]], predict_path: Union[str, List[dict]], save_path: str,
             xlabel: str, ylabel: str, title: str):
@@ -56,7 +57,7 @@ def draw_predict(csv_path: Union[str, List[dict]], predict_path: Union[str, List
         plt.plot(date_time, truth_df[col], label='ground_truth')
         plt.plot(date_time, pred_df[col], label='predict')
         plt.legend()
-        _finish(os.path.join(save_path, col[: col.find('(')] + '.png'), xlabel, ylabel, col)
+        _finish(os.path.join(save_path, col[: col.find('(')] + '.pdf'), xlabel, ylabel, col)
 
 def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[dict]], save_path: str,
             xlabel: str, ylabel: str, title: str):
@@ -64,12 +65,39 @@ def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[d
     pred_df = load_data(predict_path)
     truth_df.pop('DateTime')
     pred_df.pop('DateTime')
-    dif = []
-    for col in truth_df.columns:
-        dif.append(abs(truth_df[col].sum() - pred_df[col].sum()) / abs(truth_df[col].sum()) / len(truth_df) * 100)
-    plt.bar(truth_df.columns, dif)
-    _finish(save_path + '/err.png', xlabel, ylabel, title)
+    # dif = []
+    # for col in truth_df.columns:
+    #     dif.append(abs(truth_df[col].sum() - pred_df[col].sum()) / abs(truth_df[col].sum()) / len(truth_df) * 100)
+    # plt.bar(truth_df.columns, dif)
 
+    dif_df = abs(truth_df - pred_df)
+    abstruth_df = abs(truth_df)
+    meandif = []
+    percdif = []
+    stddif = []
+    for col in truth_df.columns:
+        meandif.append(round(dif_df[col].mean(), 2))
+        percen_df = dif_df[col] / abstruth_df[col].mean() * 100
+        # percdif.append(percen_df.mean())
+        # stddif.append(percen_df.std())
+        percdif.append(math.log(percen_df.mean()) )
+        stddif.append(math.log(percen_df.std()))
+
+    import matplotlib.pylab as pylab
+    params = {'legend.fontsize': 'xx-large',
+              'figure.figsize': (15, 10),
+              'axes.labelsize': 'xx-large',
+              'axes.titlesize': 'xx-large',
+              'xtick.labelsize': 'xx-large',
+              'ytick.labelsize': 'xx-large'}
+    pylab.rcParams.update(params)
+
+    bars = plt.bar(truth_df.columns, percdif, yerr=stddif, align='center', alpha=0.5, ecolor='black', capsize=10)
+    for i, bar in enumerate(bars):
+        yval = bar.get_height()
+        plt.text(bar.get_x(), yval + .05, meandif[i], fontsize=15)
+    plt.xticks(rotation=25)
+    _finish(save_path + '/err2.pdf', xlabel, ylabel, title)
 
 def predict(date_time: np.ndarray, ground_truth: np.ndarray, predict_values: np.ndarray,
             save_path: str, xlabel: str, ylabel: str, title: str):
@@ -149,17 +177,25 @@ def meanNstd_yy(csv_path: Union[str, List[dict]], save_path: str, plot_cols: Lis
     first_yy = 2009
     last_yy = 2016
     df_mean = pd.DataFrame(columns=df.columns)
-    df_std = pd.DataFrame(columns=df.columns)
+    # df_std = pd.DataFrame(columns=df.columns)
+    df_max = pd.DataFrame(columns=df.columns)
+    df_min = pd.DataFrame(columns=df.columns)
     for yy in range(first_yy, last_yy + 1):
         t = df[(df['DateTime'] >= datetime.datetime(yy, 1, 1)) &
                                     (df['DateTime'] < datetime.datetime(yy + 1, 1, 1))]
         df_mean = df_mean.append(t.mean(), ignore_index=True)
-        df_std = df_std.append(t.std(), ignore_index=True)
+        # df_std = df_std.append(t.std(), ignore_index=True)
+        df_max = df_max.append(t.max(), ignore_index=True)
+        df_min = df_min.append(t.min(), ignore_index=True)
     years = np.arange(first_yy, last_yy + 1)
     df.pop('DateTime')
     for col in df.columns:
-        plt.errorbar(years, df_mean[col].to_numpy(), df_std[col].to_numpy())
-        _finish(os.path.join(save_path, col[: col.find('(')] + '.png'), xlabel, ylabel, col)
+        # plt.errorbar(years, df_mean[col].to_numpy(), df_std[col].to_numpy())
+        plt.plot(years, df_max[col].to_numpy(), label='Max')
+        plt.plot(years, df_mean[col].to_numpy(), label='Average')
+        plt.plot(years, df_min[col].to_numpy(), label='Min')
+        plt.legend()
+        _finish(os.path.join(save_path, col[: col.find('(')] + '.pdf'), xlabel, ylabel, col)
 
 
 
@@ -227,6 +263,7 @@ def _finish(save_path, xlabel, ylabel, title):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
+    plt.grid()
     plt.savefig(save_path)
     plt.clf()
 
