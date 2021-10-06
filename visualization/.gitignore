@@ -1,4 +1,3 @@
-*.png
 notebooks
 /__pycache__/
 /visualization.egg-info/
