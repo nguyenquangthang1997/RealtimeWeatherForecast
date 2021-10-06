@@ -1,4 +1,4 @@
-version: '2'
+version: '3.8'
 services:
   shard00:
     image: mongo
@@ -56,34 +56,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 27027:27017
-  shard06:
-    image: mongo
-    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
-    volumes:
-      - ./data/shard06:/data/db
-      - /etc/localtime:/etc/localtime:ro
-      - ./scripts/replicaset_2:/scripts/replicaset_2
-    ports:
-      - 27028:27017
-    links:
-      - shard07
-      - shard08
-  shard07:
-    image: mongo
-    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
-    volumes:
-      - ./data/shard07:/data/db
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 27029:27017
-  shard08:
-    image: mongo
-    command: mongod --bind_ip 0.0.0.0 --replSet rs2 --shardsvr --dbpath /data/db --port 27017
-    volumes:
-      - ./data/shard08:/data/db
-      - /etc/localtime:/etc/localtime:ro
-    ports:
-      - 27030:27017
   configsvr0:
     image: mongo
     command: mongod --bind_ip 0.0.0.0 --configsvr --replSet configRs --dbpath /data/db --port 27017
@@ -96,7 +68,6 @@ services:
     links:
       - shard00
       - shard03
-      - shard06
   configsvr1:
     image: mongo
     command: mongod --bind_ip 0.0.0.0 --configsvr --replSet configRs --dbpath /data/db --port 27017
