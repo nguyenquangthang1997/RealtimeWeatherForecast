@@ -74,16 +74,19 @@ def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[d
 
     dif_df = abs(truth_df - pred_df)
     abstruth_df = abs(truth_df)
+    allpercen_df = dif_df / abstruth_df * 100
     meandif = []
     percdif = []
     stddif = []
     for col in truth_df.columns:
         meandif.append(round(dif_df[col].mean(), 2))
-        percen_df = dif_df[col] / abstruth_df[col].mean() * 100
-        # percdif.append(percen_df.mean())
-        # stddif.append(percen_df.std())
-        percdif.append(math.log(percen_df.mean()) )
-        stddif.append(math.log(percen_df.std()))
+        # percen_df = dif_df[col] / abstruth_df[col].mean() * 100
+        percen_df = allpercen_df[col].to_numpy()
+        percen_df = np.log(percen_df + 1)
+        percdif.append(percen_df.mean())
+        stddif.append(percen_df.std())
+        # percdif.append(math.log(1 + percen_df.mean()) )
+        # stddif.append(math.log(1 + percen_df.std()))
 
     import matplotlib.pylab as pylab
     params = {'legend.fontsize': 'xx-large',

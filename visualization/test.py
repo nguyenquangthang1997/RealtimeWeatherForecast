@@ -200,7 +200,7 @@ def test_err():
     #              'VPdef(mbar)': '1.91', 'sh(g/kg)': '3.52', 'H2OC(mmol/mol)': '5.65', 'rho(g/m**3)': '1232.89',
     #              'wv(m/s)': '2.93', 'max.wv(m/s)': '4.50', 'wd(deg)': '300.30'}]
     xlabel = ''
-    ylabel = 'Percen Error'
+    ylabel = 'Percent Error'
     title = ''
     save_path = 'images/err'
     if not os.path.isdir(save_path):
@@ -296,13 +296,13 @@ def test_load():
 
 
 if __name__ == '__main__':
-    print('history')
-    test_history()
-    print('predict')
-    test_drawpredict()
-    print('error')
-    test_err()
+    # print('history')
+    # test_history()
+    # print('predict')
+    # test_drawpredict()
+    # print('error')
+    # test_err()
     print('mean')
     test_meanNstd_yy()
-    print("wind")
-    test_wind()
+    # print("wind")
+    # test_wind()
