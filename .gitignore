@@ -2,3 +2,5 @@
 .DS_Store
 Mongodb/data
 Mongodb/data1
+__pycache__/
+visualization.egg-info/

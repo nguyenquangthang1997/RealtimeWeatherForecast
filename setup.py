@@ -6,8 +6,6 @@ from codecs import open
 
 from setuptools import setup
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
 
 setup(
     name='visualization',
@@ -26,9 +24,4 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
-    install_requires=required,
 )

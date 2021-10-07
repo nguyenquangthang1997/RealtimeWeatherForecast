@@ -54,9 +54,11 @@ def draw_predict(csv_path: Union[str, List[dict]], predict_path: Union[str, List
     date_time = pd.to_datetime(truth_df.pop('DateTime'), format='%d.%m.%Y %H:%M:%S')
     pred_df.pop('DateTime')
     for i, col in enumerate(truth_df.columns):
-        plt.plot(date_time, truth_df[col], label='ground_truth')
-        plt.plot(date_time, pred_df[col], label='predict')
-        plt.legend()
+        fig, ax1 = plt.subplots()
+        ax1.plot(date_time, truth_df[col], label='ground_truth')
+        ax1.plot(date_time, pred_df[col], label='predict')
+        ax1.legend()
+        fig.autofmt_xdate()
         _finish(os.path.join(save_path, col[: col.find('(')] + '.pdf'), xlabel, ylabel, col)
 
 def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[dict]], save_path: str,
