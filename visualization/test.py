@@ -14,7 +14,6 @@ def test_history():
     with open("data/full.json", "r") as file:
         csv_path = json.load(file)
 
-
     xlabel = 'Date time'
     ylabel = ''
     title = ''
@@ -31,6 +30,19 @@ def test_history():
     ylabel = ''
     title = ''
     save_path = 'images/full1year'
+    if not os.path.isdir(save_path):
+        os.mkdir(save_path)
+    history(csv_path, save_path, xlabel, ylabel, title)
+
+    # csv_path = mongodb.queryPre({})
+    with open("data/prefull.json", "r") as file:
+        # json.dump(csv_path, file)
+        csv_path = json.load(file)
+
+    xlabel = 'Date time'
+    ylabel = ''
+    title = ''
+    save_path = 'images/prefull'
     if not os.path.isdir(save_path):
         os.mkdir(save_path)
     history(csv_path, save_path, xlabel, ylabel, title)
@@ -119,6 +131,7 @@ def test_drawpredict():
         truth = json.load(file)
 
     with open("data/predictFull1MonthPred.json", "r") as file:
+        # json.dump(pred, file)
         pred = json.load(file)
     xlabel = 'Date time'
     ylabel = ''
@@ -175,6 +188,7 @@ def test_err():
         truth = json.load(file)
 
     with open("data/errorPred.json", "r") as file:
+        # json.dump(pred, file)
         pred = json.load(file)
     print(len(pred))
     # truth = [{'DateTime': 1232298600.0, 'p(mbar)': '978.50', 'T(degC)': '2.73', 'Tpot(K)': '277.61',

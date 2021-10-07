@@ -5,6 +5,7 @@ weather_data = mongoClient["weather-data"]
 
 weather_data_all_collection = weather_data["WeatherDataAll"]
 predicted_weather_data_all_collection = weather_data["PredictedWeatherDataAll"]
+pre_process_weather_data_all_collection = weather_data["PreProcessWeatherDataAll"]
 
 
 def insert_weather_data(datas):
@@ -13,6 +14,18 @@ def insert_weather_data(datas):
 
 def insert_predicted_weather_data(datas):
     predicted_weather_data_all_collection.insert_many(datas)
+
+
+def insert_pre_process_weather_data(datas):
+    pre_process_weather_data_all_collection.insert_many(datas)
+
+
+def queryPre(_query):
+    result = []
+    responses = pre_process_weather_data_all_collection.find(_query, projection={'_id': False})
+    for doc in responses:
+        result.append(doc)
+    return result
 
 
 def queryAll(_query):
