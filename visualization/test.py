@@ -226,6 +226,24 @@ def test_meanNstd_yy():
     title = ''
     meanNstd_yy(csv_path, save_path, plot_cols, xlabel, ylabel, title)
 
+def test_mean_mm():
+    # csv_path = '/home/thulx/Master/BI/jena_climate_2009_2016.csv'
+    # csv_path = [{'DateTime': 1232298600.0, 'p(mbar)': '978.50', 'T(degC)': '2.73', 'Tpot(K)': '277.61',
+    #              'Tdew(degC)': '-1.36', 'rh(%)': '74.30', 'VPmax(mbar)': '7.44', 'VPact(mbar)': '5.53',
+    #              'VPdef(mbar)': '1.91', 'sh(g/kg)': '3.52', 'H2OC(mmol/mol)': '5.65', 'rho(g/m**3)': '1232.89',
+    #              'wv(m/s)': '1.93', 'max.wv(m/s)': '4.50', 'wd(deg)': '233.30'}]
+    # csv_path = mongodb.queryAll({})
+    with open("data/full.json", "r") as file:
+        csv_path = json.load(file)
+    save_path = 'images/mean_month'
+    if not os.path.isdir(save_path):
+        os.mkdir(save_path)
+    plot_cols = []
+    xlabel = 'Date time'
+    ylabel = ''
+    title = ''
+    mean_mm(csv_path, save_path, plot_cols, xlabel, ylabel, title)
+
 
 def test_wind():
     with open("data/full.json", "r") as file:
@@ -302,7 +320,8 @@ if __name__ == '__main__':
     # test_drawpredict()
     # print('error')
     # test_err()
-    print('mean')
-    test_meanNstd_yy()
+    # print('mean')
+    # test_meanNstd_yy()
     # print("wind")
     # test_wind()
+    test_mean_mm()

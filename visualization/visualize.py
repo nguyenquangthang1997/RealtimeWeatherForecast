@@ -67,24 +67,25 @@ def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[d
     pred_df = load_data(predict_path)
     truth_df.pop('DateTime')
     pred_df.pop('DateTime')
-    # dif = []
-    # for col in truth_df.columns:
-    #     dif.append(abs(truth_df[col].sum() - pred_df[col].sum()) / abs(truth_df[col].sum()) / len(truth_df) * 100)
-    # plt.bar(truth_df.columns, dif)
 
     dif_df = abs(truth_df - pred_df)
-    abstruth_df = abs(truth_df)
-    allpercen_df = dif_df / abstruth_df * 100
+
+    truth_df = (truth_df - truth_df.min()) / (truth_df.max() - truth_df.min())
+    pred_df = (pred_df - pred_df.min()) / (pred_df.max() - pred_df.min())
+
+    normdif_df = abs(truth_df - pred_df)
+    # abstruth_df = abs(truth_df)
+    # allpercen_df = dif_df / abstruth_df * 100
     meandif = []
     percdif = []
     stddif = []
     for col in truth_df.columns:
         meandif.append(round(dif_df[col].mean(), 2))
         # percen_df = dif_df[col] / abstruth_df[col].mean() * 100
-        percen_df = allpercen_df[col].to_numpy()
-        percen_df = np.log(percen_df + 1)
-        percdif.append(percen_df.mean())
-        stddif.append(percen_df.std())
+        # percen_df = allpercen_df[col].to_numpy()
+        # percen_df = np.log(percen_df + 1)
+        percdif.append(normdif_df[col].mean())
+        stddif.append(normdif_df[col].std())
         # percdif.append(math.log(1 + percen_df.mean()) )
         # stddif.append(math.log(1 + percen_df.std()))
 
@@ -97,12 +98,19 @@ def percen_err(csv_path: Union[str, List[dict]], predict_path: Union[str, List[d
               'ytick.labelsize': 'xx-large'}
     pylab.rcParams.update(params)
 
+    # bars = plt.barh(truth_df.columns, percdif, xerr=stddif, align='center', alpha=0.5, ecolor='black', capsize=10)
+    # for i, bar in enumerate(bars):
+    #     yval = bar.get_width()
+    #     plt.text( yval, bar.get_y(), meandif[i], fontsize=15)
+    # # plt.xticks(rotation=25)
+    # _finish(save_path + '/err2.pdf', 'Mean error', ylabel, title)
+
     bars = plt.bar(truth_df.columns, percdif, yerr=stddif, align='center', alpha=0.5, ecolor='black', capsize=10)
     for i, bar in enumerate(bars):
         yval = bar.get_height()
-        plt.text(bar.get_x(), yval + .05, meandif[i], fontsize=15)
+        plt.text(bar.get_x() + 0.45, yval + .01, meandif[i], fontsize=15)
     plt.xticks(rotation=25)
-    _finish(save_path + '/err2.pdf', xlabel, ylabel, title)
+    _finish(save_path + '/err1.pdf', xlabel, 'Mean error', title)
 
 def predict(date_time: np.ndarray, ground_truth: np.ndarray, predict_values: np.ndarray,
             save_path: str, xlabel: str, ylabel: str, title: str):
@@ -201,6 +209,57 @@ def meanNstd_yy(csv_path: Union[str, List[dict]], save_path: str, plot_cols: Lis
         plt.plot(years, df_min[col].to_numpy(), label='Min')
         plt.legend()
         _finish(os.path.join(save_path, col[: col.find('(')] + '.pdf'), xlabel, ylabel, col)
+
+def mean_mm(csv_path: Union[str, List[dict]], save_path: str, plot_cols: List[str],
+            xlabel: str, ylabel: str, title: str):
+    """
+    Trung binh gia tri cua (cac) truong theo tung thang.
+
+    Parameters
+    ----------
+    csv_path : path to data.
+    save_path : path so save image.
+    plot_cols : column(s) to show.
+    """
+    df = load_data(csv_path)
+    df['DateTime'] = pd.to_datetime(df['DateTime'], format='%d.%m.%Y %H:%M:%S')
+    # df = df[plot_cols]
+    #
+    first_yy = 2009
+    last_yy = 2010
+    df_mean = pd.DataFrame(columns=df.columns)
+    years = []
+    for yy in range(first_yy, last_yy + 1):
+        for mm in range(1, 13):
+            if mm == 12:
+                t = df[(df['DateTime'] >= datetime.datetime(yy, mm, 1)) &
+                       (df['DateTime'] <= datetime.datetime(yy, mm, 31))]
+            else:
+                t = df[(df['DateTime'] >= datetime.datetime(yy, mm, 1)) &
+                                        (df['DateTime'] < datetime.datetime(yy, mm+1, 1))]
+            df_mean = df_mean.append(t.mean(), ignore_index=True)
+            #
+            # years.append(datetime.datetime(yy, mm, 1))
+            years.append(str(mm) + '-' + str(yy))
+
+    # plt.plot(years, df_mean['T(degC)'].to_numpy(), label='T (degC)')
+    # plt.bar(years, df_mean['H2OC(mmol/mol)'].to_numpy(), label='H2OC (mmol/mol)')
+    # plt.legend()
+
+    # df_mean['T(degC)'].index = pd.to_datetime(years, format='%Y.%m.%d')
+    # dt = pd.to_datetime(years, format='%Y.%m.%d')
+    # fig, ax = plt.subplots()
+    df_mean['H2OC(mmol/mol)'].plot(kind='bar')
+    df_mean['T(degC)'].plot(color=cmap(1), secondary_y=True)
+    ax = plt.gca()
+    # fig = plt.gcf()
+    ax.set_xticklabels(years)
+
+
+    # fig.autofmt_xdate()
+
+    # plt.show()
+    _finish(os.path.join(save_path,  'th20.pdf'), xlabel, ylabel, '')
 
 
 
